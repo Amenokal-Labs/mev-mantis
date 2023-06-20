@@ -24,5 +24,5 @@ navigate to the cloned folder, then run: `go run extract.go`.
 
 | Parameter | Description |
 | --- | --- |
-| address | the `strings` representing the addresses to check for balance, seperated by `,`up to 20 addresses per call|
+| address | the `strings` representing the addresses to check for balance, seperated by `,`. Up to 20 addresses per call|
 | tag | the string pre-defined block parameter, either earliest, pending or latest |
