@@ -9,7 +9,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
+<<<<<<< HEAD
 func getEtherscanKey() string {
+=======
+func get_etherscan_key() string {
+>>>>>>> 6aa8298 (initial commit)
 	// loads values from .env into the system
 	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
@@ -24,8 +28,13 @@ func getEtherscanKey() string {
 }
 
 // returns the Ether balance of a given address
+<<<<<<< HEAD
 func getBalance(address, tag string) string {
 	url := "https://api.etherscan.io/api?module=account&action=balance&address=" + address + "&tag=" + tag + "&apikey=" + getEtherscanKey()
+=======
+func get_balance(address, tag string) string {
+	url := "https://api.etherscan.io/api?module=account&action=balance&address=" + address + "&tag=" + tag + "&apikey=" + get_etherscan_key()
+>>>>>>> 6aa8298 (initial commit)
 
 	response, err := http.Get(url)
 	if err != nil {
