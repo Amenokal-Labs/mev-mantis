@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -36,7 +37,6 @@ func getEtherscanKey() string {
 }
 
 func buildUrl(action, address, tag string) string {
-
 	u := newUrl(action, address, tag)
 	return "https://api.etherscan.io/api?module=account&action=" + u.action + "&address=" + u.address + "&tag=" + u.tag + "&apikey=" + getEtherscanKey()
 }
@@ -63,4 +63,8 @@ func getBalance(address, tag string) string {
 
 func getBalances(address, tag string) string {
 	return call(buildUrl("balancemulti", address, tag))
+}
+
+func main() {
+	fmt.Println(getBalance("0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae", "latest"))
 }
