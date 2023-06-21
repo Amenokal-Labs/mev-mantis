@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,7 +26,7 @@ func getEtherscanKey() string {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
 	}
-	// gets ETHERSCAN_KEY
+	// get ETHERSCAN_KEY
 	etherscanKey, exists := os.LookupEnv("ETHERSCAN_KEY")
 
 	if exists {
@@ -37,12 +36,12 @@ func getEtherscanKey() string {
 }
 
 func buildUrl(action, address, tag string) string {
+
 	u := newUrl(action, address, tag)
 	return "https://api.etherscan.io/api?module=account&action=" + u.action + "&address=" + u.address + "&tag=" + u.tag + "&apikey=" + getEtherscanKey()
 }
 
 // returns the Ether balance of a given address
-
 func call(url string) string {
 	response, err := http.Get(url)
 	if err != nil {
@@ -64,8 +63,4 @@ func getBalance(address, tag string) string {
 
 func getBalances(address, tag string) string {
 	return call(buildUrl("balancemulti", address, tag))
-}
-
-func main() {
-	fmt.Println(getBalance("0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae", "latest"))
 }
