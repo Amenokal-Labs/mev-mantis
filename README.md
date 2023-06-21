@@ -8,9 +8,6 @@ navigate to the cloned folder, then run: `go run extract.go`.
 
 ## Docs
 
-`func getBalance(tag, address string) string`:
-
-
 `func getBalance(tag, address string) string`: returns the Ether balance of a given address.
 
 | Parameter | Description |
