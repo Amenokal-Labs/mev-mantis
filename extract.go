@@ -27,7 +27,7 @@ func getEtherscanKey() string {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
 	}
-	// get ETHERSCAN_KEY
+	// gets ETHERSCAN_KEY
 	etherscanKey, exists := os.LookupEnv("ETHERSCAN_KEY")
 
 	if exists {
@@ -41,7 +41,6 @@ func buildUrl(action, address, tag string) string {
 	return "https://api.etherscan.io/api?module=account&action=" + u.action + "&address=" + u.address + "&tag=" + u.tag + "&apikey=" + getEtherscanKey()
 }
 
-// returns the Ether balance of a given address
 func call(url string) string {
 	response, err := http.Get(url)
 	if err != nil {
