@@ -1,4 +1,6 @@
 # Etherscan API consumption in Golang
+clone the repo: `git clone https://github.com/Amenokal-Labs/mev-mantis.git`
+navigate to the cloned folder, then run: `go run extract.go`
 
 ## Instructions to run
 
@@ -17,7 +19,3 @@ navigate to the cloned folder, then run: `go run extract.go`.
 
 `func getBalances(tag string, addresses ...string) string`: returns the balance of the accounts from a list of addresses.
 
-| Parameter | Description |
-| --- | --- |
-| address | the `strings` representing the addresses to check for balance, seperated by `,`. Up to 20 addresses per call|
-| tag | the string pre-defined block parameter, either earliest, pending or latest |
