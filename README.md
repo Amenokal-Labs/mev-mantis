@@ -7,11 +7,9 @@ clone the repo: `git clone https://github.com/Amenokal-Labs/mev-mantis.git`.
 navigate to the cloned folder, then run: `go run extract.go`.
 
 ## Docs
-<<<<<<< HEAD
 
 `func getBalance(tag, address string) string`:
-=======
->>>>>>> 9d2334f (fix: updated README.md)
+
 
 `func getBalance(tag, address string) string`: returns the Ether balance of a given address.
 
