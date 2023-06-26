@@ -20,7 +20,7 @@ func HandleTransaction(method, hash string) {
 		}
 	`)
 
-	r, err := http.NewRequest("POST", "https://api.blocknative.com/transaction", bytes.NewBuffer(body))
+	r, err := http.NewRequest(method, "https://api.blocknative.com/transaction", bytes.NewBuffer(body))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func HandleAddress(method, address string) {
 		}
 	`)
 
-	r, err := http.NewRequest("POST", "https://api.blocknative.com/address", bytes.NewBuffer(body))
+	r, err := http.NewRequest(method, "https://api.blocknative.com/address", bytes.NewBuffer(body))
 	if err != nil {
 		log.Fatal(err)
 	}
