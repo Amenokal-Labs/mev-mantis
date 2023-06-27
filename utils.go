@@ -6,8 +6,25 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
+
+func GetAPIKey(keyName string) string {
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
+
+	// gets API_KEY
+	apiKey, exists := os.LookupEnv(keyName)
+	if exists {
+		return apiKey
+	}
+	return ""
+}
 
 func HandleTransaction(method, hash string) {
 	if method != "POST" && method != "DELETE" {
