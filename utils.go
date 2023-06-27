@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 func HandleTransaction(method, hash string) {
@@ -49,10 +51,19 @@ func HandleAddress(method, address string) {
 		log.Fatal(err)
 	}
 	r.Header.Add("Content-Type", "application/json")
-	b, _ := ioutil.ReadAll(r.Body) // Log the request body
-	log.Print(string(b))
 
 	// implement client to get response
+	// httpClient := &http.Client{}
+	c := http.Client{Timeout: time.Duration(1) * time.Second}
+	resp, err := c.Do(r)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	fmt.Println(r)
+	b, _ := ioutil.ReadAll(resp.Body) // Log the request body
+	fmt.Println(b)
+	log.Print(string(b))
 }
 
 func GetAddresses(blockchain, network string) {
