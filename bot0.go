@@ -16,8 +16,8 @@ func main() {
 	}
 	fmt.Println("we have a connection")
 
-	address := common.HexToAddress("0x3356c9a8f40f8e9c1d192a4347a76d18243fabc5")
-
+	const V2PairAddress string = "0x3356c9a8f40f8e9c1d192a4347a76d18243fabc5"
+	address := common.HexToAddress(V2PairAddress)
 	contract, err := NewMainCaller(address, client)
 	if err != nil {
 		log.Fatal(err)
@@ -25,4 +25,5 @@ func main() {
 
 	data, err := contract.GetReserves(&bind.CallOpts{})
 	fmt.Println(data)
+
 }
