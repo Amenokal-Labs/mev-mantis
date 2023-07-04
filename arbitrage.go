@@ -29,9 +29,9 @@ func main() {
 	}
 
 	data, err := v2PairContract.GetReserves(&bind.CallOpts{})
-	fmt.Println(new(big.Int).Div(data.Reserve0, data.Reserve1))
+	fmt.Println(new(big.Int).Div(data.Reserve1, data.Reserve0))
 
-	const V3PairAddress string = "0x11b815efB8f581194ae79006d24E0d814B7697F6"
+	const V3PairAddress string = "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"
 	cmnV3PairAddress := common.HexToAddress(V3PairAddress)
 	v3PairContract, err := UniswapV3Pair.NewUniswapV3Pair(cmnV3PairAddress, client)
 	if err != nil {
@@ -39,5 +39,18 @@ func main() {
 	}
 
 	data2, err := v3PairContract.Slot0(&bind.CallOpts{})
-	fmt.Println(data2.SqrtPriceX96)
+	fmt.Println("SqrtPriceX96:", data2.SqrtPriceX96)
+
+	q := new(big.Int).Exp(big.NewInt(2), big.NewInt(96), nil)
+	fmt.Println("Q96:", q)
+
+	sqrtPrice := new(big.Float).Quo(new(big.Float).SetInt(data2.SqrtPriceX96), new(big.Float).SetInt(q))
+	fmt.Println("sqrtPrice:", sqrtPrice)
+
+	price := new(big.Float).Mul(sqrtPrice, sqrtPrice)
+	fmt.Println("Price:", price)
+
+	adjustmentFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(12), nil)
+	adjustedPrice := new(big.Float).Quo(price, new(big.Float).SetInt(adjustmentFactor))
+	fmt.Println("actual Price:", adjustedPrice)
 }
