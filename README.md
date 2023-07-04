@@ -1,17 +1,19 @@
-## Instructions to run
+# Instructions to run
 
 clone the repo: `git clone https://github.com/Amenokal-Labs/mev-mantis.git`.
 
-navigate to the cloned folder, then run: `go run *.go`, then:
+navigate to the folder you want to use `cd cmd/*folder*`
+then run: `go run main.go`
 
-# Etherscan API consumption in Golang
+# Simple arbitrage bot between Uniswap V2 and Uniswap V3
 
-Run `go run extract.go`
-
-Docs: https://docs.etherscan.io/
+Looks for an arbitrage opportunity between USDC/WETH
 
 # Querying data from mempool using Blocknative
 
-Run `go run mempool.go utils.go`
-
 Docs: https://docs.blocknative.com/mempool-tools/webhook-api
+
+
+# Etherscan API consumption in Golang
+
+Docs: https://docs.etherscan.io/
