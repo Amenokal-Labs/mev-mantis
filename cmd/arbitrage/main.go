@@ -5,9 +5,9 @@ import (
 	"log"
 	"math/big"
 
-	UniswapV2Pair "github.com/Amenokal-Labs/mev-mantis.git/UniswapV2Pair"
-	UniswapV3Pair "github.com/Amenokal-Labs/mev-mantis.git/UniswapV3Pair"
-	"github.com/Amenokal-Labs/mev-mantis.git/utils"
+	UniswapV2Pair "github.com/Amenokal-Labs/mev-mantis.git/pkg/UniswapV2Pair"
+	UniswapV3Pair "github.com/Amenokal-Labs/mev-mantis.git/pkg/UniswapV3Pair"
+	"github.com/Amenokal-Labs/mev-mantis.git/pkg/utils"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
