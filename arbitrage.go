@@ -21,21 +21,22 @@ func main() {
 	}
 	fmt.Println("we have a connection")
 
-	const V2PairAddress string = "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc" // WETH/USDT
+	const V2PairAddress string = "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc" // USDC/WETH
 	cmnV2PairAddress := common.HexToAddress(V2PairAddress)
 	v2PairContract, err := UniswapV2Pair.NewUniswapV2Pair(cmnV2PairAddress, client)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	data, err := v2PairContract.GetReserves(&bind.CallOpts{})
+	reserves, err := v2PairContract.GetReserves(&bind.CallOpts{})
 
-	price0 := new(big.Float).Quo(new(big.Float).SetInt(data.Reserve1), new(big.Float).SetInt(data.Reserve0))
+	v2Price := new(big.Float).Quo(new(big.Float).SetInt(reserves.Reserve1), new(big.Float).SetInt(reserves.Reserve0))
+	// fmt.Println("Price:", v2Price)
 
-	adjustmentFactor0 := new(big.Int).Exp(big.NewInt(10), big.NewInt(12), nil)
-	adjustedPrice0 := new(big.Float).Quo(price0, new(big.Float).SetInt(adjustmentFactor0))
-	roundedPrice0 := fmt.Sprintf("V2 Price: 1 USDC = %.10f ETH", adjustedPrice0)
-	fmt.Println(roundedPrice0)
+	v2AdjustmentFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(12), nil)
+	v2AdjustedPrice := new(big.Float).Quo(v2Price, new(big.Float).SetInt(v2AdjustmentFactor))
+	v2RoundedPrice := fmt.Sprintf("V2 Price: 1 USDC = %.10f ETH", v2AdjustedPrice)
+	fmt.Println(v2RoundedPrice)
 
 	const V3PairAddress string = "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"
 	cmnV3PairAddress := common.HexToAddress(V3PairAddress)
@@ -44,21 +45,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	data2, err := v3PairContract.Slot0(&bind.CallOpts{})
+	slot0, err := v3PairContract.Slot0(&bind.CallOpts{})
 	// fmt.Println("SqrtPriceX96:", data2.SqrtPriceX96)
 
 	q := new(big.Int).Exp(big.NewInt(2), big.NewInt(96), nil)
 	// fmt.Println("Q96:", q)
 
-	sqrtPrice := new(big.Float).Quo(new(big.Float).SetInt(data2.SqrtPriceX96), new(big.Float).SetInt(q))
+	sqrtPrice := new(big.Float).Quo(new(big.Float).SetInt(slot0.SqrtPriceX96), new(big.Float).SetInt(q))
 	// fmt.Println("sqrtPrice:", sqrtPrice)
 
-	price := new(big.Float).Mul(sqrtPrice, sqrtPrice)
-	// fmt.Println("Price:", price)
+	v3Price := new(big.Float).Mul(sqrtPrice, sqrtPrice)
+	// fmt.Println("Price:", v3Price)
 
-	adjustmentFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(12), nil)
-	adjustedPrice := new(big.Float).Quo(price, new(big.Float).SetInt(adjustmentFactor))
-
-	roundedPrice := fmt.Sprintf("V3 Price: 1 USDC = %.10f ETH", adjustedPrice)
+	v3AdjustmentFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(12), nil)
+	v3AdjustedPrice := new(big.Float).Quo(v3Price, new(big.Float).SetInt(v3AdjustmentFactor))
+	roundedPrice := fmt.Sprintf("V3 Price: 1 USDC = %.10f ETH", v3AdjustedPrice)
 	fmt.Println(roundedPrice)
 }
