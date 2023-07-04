@@ -59,6 +59,13 @@ func main() {
 
 	v3AdjustmentFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(12), nil)
 	v3AdjustedPrice := new(big.Float).Quo(v3Price, new(big.Float).SetInt(v3AdjustmentFactor))
-	roundedPrice := fmt.Sprintf("V3 Price: 1 USDC = %.10f ETH", v3AdjustedPrice)
-	fmt.Println(roundedPrice)
+	v3RoundedPrice := fmt.Sprintf("V3 Price: 1 USDC = %.10f ETH", v3AdjustedPrice)
+	fmt.Println(v3RoundedPrice)
+
+	x := new(big.Float).Mul(v3AdjustedPrice, big.NewFloat(1.1))
+	if v2AdjustedPrice.Cmp(x) > 0 {
+		fmt.Println("arbitrage")
+	} else {
+		fmt.Println("no arbitrage")
+	}
 }
