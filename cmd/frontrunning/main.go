@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -40,17 +41,25 @@ func main() {
 
 		hash := <-hashes
 		fmt.Println(hash)
-
 		tx, _, _ := httpsClient.TransactionByHash(context.Background(), hash)
+
+		// tx, isPending, err := httpsClient.TransactionByHash(context.Background(), hash)
 		// if err != nil {
 		// 	log.Fatal(err)
 		// }
 		// fmt.Println(isPending)
 		// if isPending != true {
-		// 	log.Fatal("tx not pending")
+		// 	log.Fatal("tx not pending anymore")
 		// }
-		data := tx.Data()
-		fmt.Println(string(data))
+		data, _ := tx.MarshalJSON()
+		// fmt.Println(string(data))
+
+		type Tx struct {
+			Input string `json:"input"`
+		}
+		var tx0 Tx
+		json.Unmarshal(data, &tx0)
+		fmt.Println("\n\ntx input: ", tx0.Input)
 		time.Sleep(10 * time.Second)
 	}
 }
