@@ -10,7 +10,6 @@ import (
 
 	"github.com/Amenokal-Labs/mev-mantis.git/pkg/utils"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/ethclient/gethclient"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -55,18 +54,19 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println(txn.To())
 
-		from, err := types.Sender(types.NewLondonSigner(txn.ChainId()), txn)
-		if err != nil {
-			panic(err)
-		}
+		// from, err := types.Sender(types.NewLondonSigner(txn.ChainId()), txn)
+		// if err != nil {
+		// 	panic(err)
+		// }
 
 		type Tx struct {
 			Input string `json:"input"`
 		}
 		var tx0 Tx
 		json.Unmarshal(data, &tx0)
-		fmt.Println("tx input: ", tx0.Input)
+		fmt.Println("Tx input: ", tx0.Input)
 
 		// get contract code if any
 		type Contract struct {
@@ -77,7 +77,7 @@ func main() {
 		body := []byte(`{
 			"jsonrpc":"2.0",
 			"method":"eth_getCode",
-			"params": ["` + from.Hex() + `", "pending"],
+			"params": ["` + txn.To().String() + `", "pending"],
 			"id":1
 		}`)
 		r, err := http.NewRequest("POST", "https://mainnet.infura.io/v3/"+utils.GetAPIKey("INFURA_KEY"), bytes.NewBuffer(body))
@@ -96,11 +96,17 @@ func main() {
 		if derr != nil {
 			panic(derr)
 		}
-		fmt.Println("\nContract code:", contract.Result)
+		// fmt.Println("\nContract code:", contract.Result)
 		// if res.StatusCode != http.StatusCreated {
 		// 	panic(res.Status)
 		// }
-		time.Sleep(4 * time.Second)
+		if contract.Result == "0x" {
+			continue
+		}
+		contract2 := contract.Result
+		fmt.Println("\nContract code:", contract2)
 
+		fmt.Println("___________________________")
+		time.Sleep(4 * time.Second)
 	}
 }
