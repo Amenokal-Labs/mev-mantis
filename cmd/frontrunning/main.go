@@ -109,7 +109,7 @@ func main() {
 		fmt.Println("\nContract code:", contractCode[:26], "...")
 
 		calldata := tx0.Input
-		for i := 0; i < 5; i = i + 2 {
+		for i := 0; i < len(calldata); i = i + 2 {
 			if (string(calldata[i])+string(calldata[i+1]) == "74") && (calldata[i+2:i+44] == from.String()) {
 				fmt.Println("replace address here")
 			}
