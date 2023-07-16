@@ -10,6 +10,7 @@ import (
 
 	"github.com/Amenokal-Labs/mev-mantis.git/pkg/utils"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/ethclient/gethclient"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -45,28 +46,28 @@ func main() {
 		fmt.Println("\nPending count:", pc)
 
 		hash := <-hashes
-		fmt.Println("Tx hash:", hash)
+		fmt.Println("      Tx hash:", hash)
 		txn, _, err := httpsClient.TransactionByHash(context.Background(), hash)
-		// if err != nil {
-		// 	panic(err)
-		// }
+		if err != nil {
+			panic(err)
+		}
 		data, err := txn.MarshalJSON()
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(txn.To())
 
-		// from, err := types.Sender(types.NewLondonSigner(txn.ChainId()), txn)
-		// if err != nil {
-		// 	panic(err)
-		// }
+		from, err := types.Sender(types.NewLondonSigner(txn.ChainId()), txn)
+		if err != nil {
+			panic(err)
+		}
 
 		type Tx struct {
 			Input string `json:"input"`
 		}
 		var tx0 Tx
 		json.Unmarshal(data, &tx0)
-		fmt.Println("Tx input: ", tx0.Input)
+		fmt.Println("  Tx Calldata:", tx0.Input)
+		fmt.Println("   Tx address:", txn.To())
 
 		// get contract code if any
 		type Contract struct {
@@ -100,12 +101,19 @@ func main() {
 		// if res.StatusCode != http.StatusCreated {
 		// 	panic(res.Status)
 		// }
+
 		if contract.Result == "0x" {
 			continue
 		}
-		contract2 := contract.Result
-		fmt.Println("\nContract code:", contract2)
+		contractCode := contract.Result
+		fmt.Println("\nContract code:", contractCode[:26], "...")
 
+		calldata := tx0.Input
+		for i := 0; i < 5; i = i + 2 {
+			if (string(calldata[i])+string(calldata[i+1]) == "74") && (calldata[i+2:i+44] == from.String()) {
+				fmt.Println("replace address here")
+			}
+		}
 		fmt.Println("___________________________")
 		time.Sleep(4 * time.Second)
 	}
