@@ -111,7 +111,7 @@ func main() {
 		calldata := tx0.Input
 		for i := 0; i < len(calldata); i = i + 2 {
 			if (string(calldata[i])+string(calldata[i+1]) == "74") && (calldata[i+2:i+44] == from.String()) {
-				fmt.Println("replace address here")
+				fmt.Println("replace address at index i+2")
 			}
 		}
 		fmt.Println("___________________________")
