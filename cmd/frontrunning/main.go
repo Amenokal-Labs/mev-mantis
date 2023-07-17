@@ -109,9 +109,11 @@ func main() {
 		fmt.Println("\nContract code:", contractCode[:26], "...")
 
 		calldata := tx0.Input
+		PUSH21 := "74"    // opcode, push 21-byte value onto stack
+		WORD_LENGTH := 64 //32 bytes
 		for i := 0; i < len(calldata); i = i + 2 {
-			if (string(calldata[i])+string(calldata[i+1]) == "74") && (calldata[i+2:i+44] == from.String()) {
-				fmt.Println("replace address at index i+2")
+			if (string(calldata[i])+string(calldata[i+1]) == PUSH21) && (calldata[i+23:i+1+WORD_LENGTH] == from.String()) {
+				fmt.Println("replace address at index i+23")
 			}
 		}
 		fmt.Println("___________________________")
