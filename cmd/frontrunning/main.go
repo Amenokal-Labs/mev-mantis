@@ -3,26 +3,33 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
+	"math"
+	"math/big"
 	"net/http"
 	"time"
 
 	"github.com/Amenokal-Labs/mev-mantis.git/pkg/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/ethclient/gethclient"
+	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
 func main() {
-	httpsClient, err := ethclient.Dial("https://mainnet.infura.io/v3/" + utils.GetAPIKey("INFURA_KEY"))
+	client, err := ethclient.Dial("https://rinkeby.infura.io/v3/" + utils.GetKey("INFURA_KEY"))
 	if err != nil {
 		panic(err)
 	}
 
-	rpc, err := rpc.Dial("wss://mainnet.infura.io/ws/v3/" + utils.GetAPIKey("INFURA_KEY"))
+	rpc, err := rpc.Dial("wss://mainnet.infura.io/ws/v3/" + utils.GetKey("INFURA_KEY"))
 	if err != nil {
 		panic(err)
 	}
@@ -42,16 +49,17 @@ func main() {
 	}
 
 	for {
-		pc, _ := httpsClient.PendingTransactionCount(context.Background())
+		pc, _ := client.PendingTransactionCount(context.Background())
 		fmt.Println("\nPending count:", pc)
 
 		hash := <-hashes
 		fmt.Println("      Tx hash:", hash)
-		txn, _, err := httpsClient.TransactionByHash(context.Background(), hash)
+		txn, _, err := client.TransactionByHash(context.Background(), hash)
 		if err != nil {
 			panic(err)
 		}
-		data, err := txn.MarshalJSON()
+
+		marshalledTxn, err := txn.MarshalJSON()
 		if err != nil {
 			panic(err)
 		}
@@ -64,9 +72,10 @@ func main() {
 		type Tx struct {
 			Input string `json:"input"`
 		}
-		var tx0 Tx
-		json.Unmarshal(data, &tx0)
-		fmt.Println("  Tx Calldata:", tx0.Input)
+		var tx Tx
+		json.Unmarshal(marshalledTxn, &tx)
+		fmt.Println("  Tx Calldata:", tx.Input)
+
 		fmt.Println("   Tx address:", txn.To())
 
 		// get contract code if any
@@ -81,7 +90,7 @@ func main() {
 			"params": ["` + txn.To().String() + `", "pending"],
 			"id":1
 		}`)
-		r, err := http.NewRequest("POST", "https://mainnet.infura.io/v3/"+utils.GetAPIKey("INFURA_KEY"), bytes.NewBuffer(body))
+		r, err := http.NewRequest("POST", "https://mainnet.infura.io/v3/"+utils.GetKey("INFURA_KEY"), bytes.NewBuffer(body))
 		if err != nil {
 			panic(err)
 		}
@@ -108,16 +117,68 @@ func main() {
 		contractCode := contract.Result
 		fmt.Println("\nContract code:", contractCode[:26], "...")
 
-		calldata := tx0.Input
-		PUSH21 := "74"    // opcode, push 21-byte value onto stack
-		WORD_LENGTH := 64 // 32 bytes
-		N_ZEROS := 22     //
-		for i := 0; i < len(calldata); i = i + 2 {
-			if (string(calldata[i])+string(calldata[i+1]) == PUSH21) && (calldata[i+1+N_ZEROS:i+1+WORD_LENGTH] == from.String()) {
-				fmt.Println("replace address at index i+23")
-			}
+		calldata := tx.Input
+		address := from.String()
+		if replaceAddress(calldata, address) != calldata {
+			sendTx()
 		}
+
 		fmt.Println("___________________________")
 		time.Sleep(4 * time.Second)
 	}
+}
+
+func replaceAddress(_calldata, _address string) string {
+	PUSH21 := "74"    // opcode, push 21-byte value onto stack
+	WORD_LENGTH := 64 // 32 bytes
+	N_ZEROS := 22     // number of zeros before first non null bit of the address
+	calldata := _calldata
+
+	for i := 0; i < len(calldata); i = i + 2 {
+		if (string(calldata[i])+string(calldata[i+1]) == PUSH21) && (calldata[i+1+N_ZEROS:i+1+WORD_LENGTH] == _address) {
+			calldata = calldata[0:i+1] + _address + calldata[i+2+WORD_LENGTH:]
+		}
+	}
+
+	return calldata
+}
+
+func createTx(client *ethclient.Client, originalTx *types.Transaction) {
+	privateKey, err := crypto.HexToECDSA(utils.GetKey("PRIVATE_KEY"))
+	if err != nil {
+		panic(err)
+	}
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		log.Fatal("error casting public key to ECDSA")
+	}
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	toAddress := originalTx.To()
+	value := originalTx.Value()
+	gasLimit := uint64(math.MaxUint64)
+	gasPrice := originalTx.GasPrice()
+	data := originalTx.Data()
+	tx := types.NewTransaction(nonce, *toAddress, value, gasLimit, gasPrice, data)
+
+	RINKEBY_ID := big.NewInt(4)
+	signedTx, err := types.SignTx(tx, types.NewLondonSigner(RINKEBY_ID), privateKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rawTxnBytes, err := rlp.EncodeToBytes(signedTx)
+	if err != nil {
+		panic(err)
+	}
+	rawTxnHex := hex.EncodeToString(rawTxnBytes)
+	fmt.Printf(rawTxnHex)
+}
+
+func sendTx() {
+
 }
