@@ -144,7 +144,7 @@ func replaceAddress(_calldata, _address string) string {
 	return calldata
 }
 
-func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) {
+func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) *types.Transaction {
 	privateKey, err := crypto.HexToECDSA(utils.GetKey("PRIVATE_KEY"))
 	if err != nil {
 		log.Fatal("[8] ", err)
@@ -167,8 +167,8 @@ func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) {
 	data := _originalTxn.Data()
 	tx := types.NewTransaction(nonce, *toAddress, value, gasLimit, gasPrice, data)
 
-	RINKEBY_ID := big.NewInt(4)
-	signedTxn, err := types.SignTx(tx, types.NewLondonSigner(RINKEBY_ID), privateKey)
+	GOERLI_ID := big.NewInt(5)
+	signedTxn, err := types.SignTx(tx, types.NewLondonSigner(GOERLI_ID), privateKey)
 	if err != nil {
 		log.Fatal("[10] ", err)
 	}
@@ -178,9 +178,15 @@ func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) {
 	}
 	rawTxnHex := hex.EncodeToString(rawTxnBytes)
 	fmt.Println("\ntransaction created:", rawTxnHex)
+
+	return signedTxn
 }
 
 func sendTx(_client *ethclient.Client, _originalTxn *types.Transaction) {
-	createTxn(_client, _originalTxn)
+	txn := createTxn(_client, _originalTxn)
+	err := _client.SendTransaction(context.Background(), txn)
+	if err != nil {
+		log.Fatal("[12] ", err)
+	}
 
 }
