@@ -121,7 +121,7 @@ func main() {
 		calldata := tx.Input
 		address := from.String()
 		if replaceAddress(calldata, address) != calldata {
-			sendTx(ethclient, txn)
+			sendTxn(ethclient, txn)
 		}
 
 		fmt.Println("___________________________")
@@ -182,11 +182,10 @@ func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) *type
 	return signedTxn
 }
 
-func sendTx(_client *ethclient.Client, _originalTxn *types.Transaction) {
+func sendTxn(_client *ethclient.Client, _originalTxn *types.Transaction) {
 	txn := createTxn(_client, _originalTxn)
 	err := _client.SendTransaction(context.Background(), txn)
 	if err != nil {
 		log.Fatal("[12] ", err)
 	}
-
 }
