@@ -12,7 +12,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func GetAPIKey(keyName string) string {
+func GetKey(keyName string) string {
 	// loads values from .env into the system
 	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
@@ -32,7 +32,7 @@ func HandleTransaction(method, hash string) {
 	}
 	body := []byte(`
 		{
-			"apiKey":` + GetAPIKey("BLOCKNATIVE_KEY") + `,
+			"apiKey":` + GetKey("BLOCKNATIVE_KEY") + `,
 			"hash":` + hash + `,
 			"blockchain":"ethereum",
 			"network":"main"
@@ -56,7 +56,7 @@ func HandleAddress(method, address string) {
 	}
 	body := []byte(`
 		{
-			"apiKey":` + GetAPIKey("BLOCKNATIVE_KEY") + `,
+			"apiKey":` + GetKey("BLOCKNATIVE_KEY") + `,
 			"address":` + address + `,
 			"blockchain":"ethereum",
 			"networks":"main"
@@ -84,7 +84,7 @@ func HandleAddress(method, address string) {
 }
 
 func GetAddresses(blockchain, network string) {
-	url := "https://api.blocknative.com/address/" + GetAPIKey("BLOCKNATIVE_KEY") + "/" + blockchain + "/" + network + "/"
+	url := "https://api.blocknative.com/address/" + GetKey("BLOCKNATIVE_KEY") + "/" + blockchain + "/" + network + "/"
 	response, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
@@ -98,7 +98,7 @@ func GetAddresses(blockchain, network string) {
 }
 
 func GetTransactions(blockchain, network string) {
-	url := "https://api.blocknative.com/transaction/" + GetAPIKey("BLOCKNATIVE_KEY") + "/" + blockchain + "/" + network + "/"
+	url := "https://api.blocknative.com/transaction/" + GetKey("BLOCKNATIVE_KEY") + "/" + blockchain + "/" + network + "/"
 	response, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
