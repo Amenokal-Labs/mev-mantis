@@ -57,17 +57,17 @@ func main() {
 		fmt.Println("      Tx hash:", hash)
 		txn, _, err := ethclient.TransactionByHash(context.Background(), hash)
 		if err != nil {
-			log.Fatal("[1] ", err)
+			log.Fatal("[3] ", err)
 		}
 
 		marshalledTxn, err := txn.MarshalJSON()
 		if err != nil {
-			log.Fatal("[3] ", err)
+			log.Fatal("[4] ", err)
 		}
 
 		from, err := types.Sender(types.NewLondonSigner(txn.ChainId()), txn)
 		if err != nil {
-			log.Fatal("[4] ", err)
+			log.Fatal("[5] ", err)
 		}
 
 		type Tx struct {
@@ -76,7 +76,6 @@ func main() {
 		var tx Tx
 		json.Unmarshal(marshalledTxn, &tx)
 		fmt.Println("  Tx Calldata:", tx.Input)
-
 		fmt.Println("   Tx address:", txn.To())
 
 		// get contract code if any
@@ -93,19 +92,19 @@ func main() {
 		}`)
 		r, err := http.NewRequest("POST", "https://mainnet.infura.io/v3/"+utils.GetKey("INFURA_KEY"), bytes.NewBuffer(body))
 		if err != nil {
-			log.Fatal("[5] ", err)
+			log.Fatal("[6] ", err)
 		}
 		r.Header.Add("Content-Type", "application/json")
 		client := &http.Client{}
 		res, err := client.Do(r)
 		if err != nil {
-			log.Fatal("[6] ", err)
+			log.Fatal("[7] ", err)
 		}
 		defer res.Body.Close()
 		contract := &Contract{}
 		derr := json.NewDecoder(res.Body).Decode(contract)
 		if derr != nil {
-			log.Fatal("[7] ", derr)
+			log.Fatal("[8] ", derr)
 		}
 		// fmt.Println("\nContract code:", contract.Result)
 		// if res.StatusCode != http.StatusCreated {
@@ -147,7 +146,7 @@ func replaceAddress(_calldata, _address string) string {
 func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) *types.Transaction {
 	privateKey, err := crypto.HexToECDSA(utils.GetKey("PRIVATE_KEY"))
 	if err != nil {
-		log.Fatal("[8] ", err)
+		log.Fatal("[9] ", err)
 	}
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
@@ -158,7 +157,7 @@ func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) *type
 
 	nonce, err := _client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
-		log.Fatal("[9] ", err)
+		log.Fatal("[10] ", err)
 	}
 	toAddress := _originalTxn.To()
 	value := _originalTxn.Value()
@@ -170,11 +169,11 @@ func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) *type
 	GOERLI_ID := big.NewInt(5)
 	signedTxn, err := types.SignTx(tx, types.NewLondonSigner(GOERLI_ID), privateKey)
 	if err != nil {
-		log.Fatal("[10] ", err)
+		log.Fatal("[11] ", err)
 	}
 	rawTxnBytes, err := rlp.EncodeToBytes(signedTxn)
 	if err != nil {
-		log.Fatal("[11] ", err)
+		log.Fatal("[12] ", err)
 	}
 	rawTxnHex := hex.EncodeToString(rawTxnBytes)
 	fmt.Println("\ntransaction created:", rawTxnHex)
@@ -186,6 +185,6 @@ func sendTxn(_client *ethclient.Client, _originalTxn *types.Transaction) {
 	txn := createTxn(_client, _originalTxn)
 	err := _client.SendTransaction(context.Background(), txn)
 	if err != nil {
-		log.Fatal("[12] ", err)
+		log.Fatal("[13] ", err)
 	}
 }
