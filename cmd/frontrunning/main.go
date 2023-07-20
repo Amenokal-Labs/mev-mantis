@@ -24,14 +24,15 @@ import (
 )
 
 func main() {
-	client, err := ethclient.Dial("https://rinkeby.infura.io/v3/" + utils.GetKey("INFURA_KEY"))
+	ethclient, err := ethclient.Dial("https://goerli.infura.io/v3/" + utils.GetKey("INFURA_KEY"))
 	if err != nil {
-		panic(err)
+		log.Fatal("[0] ", err)
+
 	}
 
-	rpc, err := rpc.Dial("wss://mainnet.infura.io/ws/v3/" + utils.GetKey("INFURA_KEY"))
+	rpc, err := rpc.Dial("wss://goerli.infura.io/ws/v3/" + utils.GetKey("INFURA_KEY"))
 	if err != nil {
-		panic(err)
+		log.Fatal("[1] ", err)
 	}
 	subscriber := gethclient.New(rpc)
 	fmt.Println("client connected..")
@@ -45,28 +46,28 @@ func main() {
 	hashes := make(chan common.Hash)
 	_, err = subscriber.SubscribePendingTransactions(context.Background(), hashes)
 	if err != nil {
-		panic(err)
+		log.Fatal("[2] ", err)
 	}
 
 	for {
-		pc, _ := client.PendingTransactionCount(context.Background())
+		pc, _ := ethclient.PendingTransactionCount(context.Background())
 		fmt.Println("\nPending count:", pc)
 
 		hash := <-hashes
 		fmt.Println("      Tx hash:", hash)
-		txn, _, err := client.TransactionByHash(context.Background(), hash)
+		txn, _, err := ethclient.TransactionByHash(context.Background(), hash)
 		if err != nil {
-			panic(err)
+			log.Fatal("[1] ", err)
 		}
 
 		marshalledTxn, err := txn.MarshalJSON()
 		if err != nil {
-			panic(err)
+			log.Fatal("[3] ", err)
 		}
 
 		from, err := types.Sender(types.NewLondonSigner(txn.ChainId()), txn)
 		if err != nil {
-			panic(err)
+			log.Fatal("[4] ", err)
 		}
 
 		type Tx struct {
@@ -92,19 +93,19 @@ func main() {
 		}`)
 		r, err := http.NewRequest("POST", "https://mainnet.infura.io/v3/"+utils.GetKey("INFURA_KEY"), bytes.NewBuffer(body))
 		if err != nil {
-			panic(err)
+			log.Fatal("[5] ", err)
 		}
 		r.Header.Add("Content-Type", "application/json")
 		client := &http.Client{}
 		res, err := client.Do(r)
 		if err != nil {
-			panic(err)
+			log.Fatal("[6] ", err)
 		}
 		defer res.Body.Close()
 		contract := &Contract{}
 		derr := json.NewDecoder(res.Body).Decode(contract)
 		if derr != nil {
-			panic(derr)
+			log.Fatal("[7] ", derr)
 		}
 		// fmt.Println("\nContract code:", contract.Result)
 		// if res.StatusCode != http.StatusCreated {
@@ -120,7 +121,7 @@ func main() {
 		calldata := tx.Input
 		address := from.String()
 		if replaceAddress(calldata, address) != calldata {
-			sendTx()
+			sendTx(ethclient, txn)
 		}
 
 		fmt.Println("___________________________")
@@ -143,10 +144,10 @@ func replaceAddress(_calldata, _address string) string {
 	return calldata
 }
 
-func createTx(client *ethclient.Client, originalTx *types.Transaction) {
+func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) {
 	privateKey, err := crypto.HexToECDSA(utils.GetKey("PRIVATE_KEY"))
 	if err != nil {
-		panic(err)
+		log.Fatal("[8] ", err)
 	}
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
@@ -155,30 +156,31 @@ func createTx(client *ethclient.Client, originalTx *types.Transaction) {
 	}
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
 
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	nonce, err := _client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[9] ", err)
 	}
-	toAddress := originalTx.To()
-	value := originalTx.Value()
+	toAddress := _originalTxn.To()
+	value := _originalTxn.Value()
 	gasLimit := uint64(math.MaxUint64)
-	gasPrice := originalTx.GasPrice()
-	data := originalTx.Data()
+	gasPrice := _originalTxn.GasPrice()
+	data := _originalTxn.Data()
 	tx := types.NewTransaction(nonce, *toAddress, value, gasLimit, gasPrice, data)
 
 	RINKEBY_ID := big.NewInt(4)
-	signedTx, err := types.SignTx(tx, types.NewLondonSigner(RINKEBY_ID), privateKey)
+	signedTxn, err := types.SignTx(tx, types.NewLondonSigner(RINKEBY_ID), privateKey)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[10] ", err)
 	}
-	rawTxnBytes, err := rlp.EncodeToBytes(signedTx)
+	rawTxnBytes, err := rlp.EncodeToBytes(signedTxn)
 	if err != nil {
-		panic(err)
+		log.Fatal("[11] ", err)
 	}
 	rawTxnHex := hex.EncodeToString(rawTxnBytes)
-	fmt.Printf(rawTxnHex)
+	fmt.Println("\ntransaction created:", rawTxnHex)
 }
 
-func sendTx() {
+func sendTx(_client *ethclient.Client, _originalTxn *types.Transaction) {
+	createTxn(_client, _originalTxn)
 
 }
