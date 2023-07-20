@@ -48,21 +48,14 @@ func main() {
 		fmt.Println("\nPending count:", pc)
 
 		txn, marshalledTxn, from := getTxn(ethclient, subscriber)
-		type Txn struct {
-			Input string `json:"input"`
-		}
-		var tx Txn
-		json.Unmarshal(marshalledTxn, &tx)
-		fmt.Println("  Tx Calldata:", tx.Input)
-		fmt.Println("   Tx address:", txn.To())
-
-		contract := getContract(txn)
+		calldata, contract := getCalldata(txn, marshalledTxn)
 		if contract == "0x" {
 			continue
 		}
+		fmt.Println("    Tx Calldata:", calldata)
+		fmt.Println("     Tx address:", txn.To())
 		fmt.Println("\nContract code:", contract[:26], "...")
 
-		calldata := tx.Input
 		address := from.String()
 		if replaceAddress(calldata, address) != calldata {
 			sendTxn(ethclient, txn)
@@ -99,13 +92,13 @@ func getTxn(ethclient *ethclient.Client, subscriber *gethclient.Client) (*types.
 	return txn, marshalledTxn, from
 }
 
-func getContract(txn *types.Transaction) string {
+func getCalldata(_txn *types.Transaction, _marshalledTxn []byte) (calldata string, contract string) {
 	type Contract struct {
 		JsonRpc string `json:"jsonrpc"`
 		Id      int    `json:"id"`
-		Result  string `json:"result"`
+		Code    string `json:"result"`
 	}
-	to := txn.To()
+	to := _txn.To()
 	if to == nil {
 		log.Fatal("[14] transaction is a contract creation.")
 	}
@@ -126,15 +119,21 @@ func getContract(txn *types.Transaction) string {
 		log.Fatal("[7] ", err)
 	}
 	defer res.Body.Close()
-	contract := &Contract{}
-	derr := json.NewDecoder(res.Body).Decode(contract)
+	c := &Contract{}
+	derr := json.NewDecoder(res.Body).Decode(c)
 	if derr != nil {
 		log.Fatal("[8] ", derr)
 	}
 	// if res.StatusCode != http.StatusCreated {
 	// 	panic(res.Status)
 	// }
-	return contract.Result
+
+	type Txn struct {
+		Input string `json:"input"`
+	}
+	var tx Txn
+	json.Unmarshal(_marshalledTxn, &tx)
+	return tx.Input, c.Code
 }
 
 func replaceAddress(_calldata, _address string) string {
