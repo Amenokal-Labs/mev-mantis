@@ -66,25 +66,25 @@ func main() {
 	}
 }
 
-func getTxn(ethclient *ethclient.Client, subscriber *gethclient.Client) (*types.Transaction, []byte, common.Address) {
+func getTxn(_ethclient *ethclient.Client, _subscriber *gethclient.Client) (txn *types.Transaction, marshalledTxn []byte, from common.Address) {
 	hashes := make(chan common.Hash)
-	_, err := subscriber.SubscribePendingTransactions(context.Background(), hashes)
+	_, err := _subscriber.SubscribePendingTransactions(context.Background(), hashes)
 	if err != nil {
 		log.Fatal("[2] ", err)
 	}
 	hash := <-hashes
 	fmt.Println("      Tx hash:", hash)
-	txn, _, err := ethclient.TransactionByHash(context.Background(), hash)
+	txn, _, err = _ethclient.TransactionByHash(context.Background(), hash)
 	if err != nil {
 		log.Fatal("[3] ", err)
 	}
 
-	marshalledTxn, err := txn.MarshalJSON()
+	marshalledTxn, err = txn.MarshalJSON()
 	if err != nil {
 		log.Fatal("[4] ", err)
 	}
 
-	from, err := types.Sender(types.NewLondonSigner(txn.ChainId()), txn)
+	from, err = types.Sender(types.NewLondonSigner(txn.ChainId()), txn)
 	if err != nil {
 		log.Fatal("[5] ", err)
 	}
@@ -151,7 +151,7 @@ func replaceAddress(_calldata, _address string) string {
 	return calldata
 }
 
-func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) *types.Transaction {
+func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) (signedTxn *types.Transaction) {
 	privateKey, err := crypto.HexToECDSA(utils.GetKey("PRIVATE_KEY"))
 	if err != nil {
 		log.Fatal("[9] ", err)
@@ -175,7 +175,7 @@ func createTxn(_client *ethclient.Client, _originalTxn *types.Transaction) *type
 	tx := types.NewTransaction(nonce, *toAddress, value, gasLimit, gasPrice, data)
 
 	GOERLI_ID := big.NewInt(5)
-	signedTxn, err := types.SignTx(tx, types.NewLondonSigner(GOERLI_ID), privateKey)
+	signedTxn, err = types.SignTx(tx, types.NewLondonSigner(GOERLI_ID), privateKey)
 	if err != nil {
 		log.Fatal("[11] ", err)
 	}
