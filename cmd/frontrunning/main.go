@@ -84,10 +84,14 @@ func main() {
 			Id      int    `json:"id"`
 			Result  string `json:"result"`
 		}
+		reciever := txn.To()
+		if reciever == nil {
+			log.Fatal("[14] transaction is a contract creation.")
+		}
 		body := []byte(`{
 			"jsonrpc":"2.0",
 			"method":"eth_getCode",
-			"params": ["` + txn.To().String() + `", "pending"],
+			"params": ["` + reciever.String() + `", "pending"],
 			"id":1
 		}`)
 		r, err := http.NewRequest("POST", "https://mainnet.infura.io/v3/"+utils.GetKey("INFURA_KEY"), bytes.NewBuffer(body))
