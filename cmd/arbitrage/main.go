@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	client, err := ethclient.Dial("https://mainnet.infura.io/v3/" + utils.GetAPIKey("INFURA_KEY"))
+	client, err := ethclient.Dial("https://mainnet.infura.io/v3/" + utils.GetKey("INFURA_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}

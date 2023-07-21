@@ -1,9 +1,6 @@
 # Instructions to run
 
-clone the repo: `git clone https://github.com/Amenokal-Labs/mev-mantis.git`.
-
-navigate to the folder you want to use `cd cmd/*folder*`
-then run: `go run main.go`
+run: `go run cmd/*folder/*main.go`
 
 # Simple arbitrage bot between Uniswap V2 and Uniswap V3
 
