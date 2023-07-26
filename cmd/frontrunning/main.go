@@ -21,6 +21,9 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
+const FOUNDRY_ACCOUNT_ADDRESS1 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+const FOUNDRY_ACCOUNT_ADDRESS2 = "0x976EA74026E726554dB657fA54763abd0C3a0aa9"
+
 func main() {
 	ethclient, err := ethclient.Dial("https://sepolia.infura.io/v3/" + utils.GetKey("INFURA_KEY"))
 	if err != nil {
@@ -39,12 +42,12 @@ func main() {
 	// if err != nil {
 	// 	panic(err)
 	// }
-	from := common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+	from := common.HexToAddress(FOUNDRY_ACCOUNT_ADDRESS1)
 	nonce, _ := ethclient.PendingNonceAt(context.Background(), from)
 	suggestedGasPrice, _ := ethclient.SuggestGasPrice(context.Background())
 	gasPrice := new(big.Int).Mul(suggestedGasPrice, big.NewInt(10))
 	gas := uint64(30000000)
-	to := common.HexToAddress("0x976EA74026E726554dB657fA54763abd0C3a0aa9")
+	to := common.HexToAddress(FOUNDRY_ACCOUNT_ADDRESS2)
 	value := big.NewInt(1000000000000)
 	data := []byte("hoy--")
 
@@ -215,12 +218,12 @@ func simulateTxn(_rawTxnBytes []byte) {
 // 	}
 // }
 
-func createTx(nonce uint64, gasPrice *big.Int, gas uint64, to common.Address, value *big.Int, data []byte) (tx *types.Transaction) {
+func createTx(nonce uint64, gasPrice *big.Int, gas uint64, to *common.Address, value *big.Int, data []byte) (tx *types.Transaction) {
 	return types.NewTx(&types.LegacyTx{
 		Nonce:    nonce,    // nonce of sender account
 		GasPrice: gasPrice, // wei per gas
 		Gas:      gas,      // gas limit
-		To:       &to,      // nil means contract creation
+		To:       to,       // nil means contract creation
 		Value:    value,    // wei amount
 		Data:     data,     // contract invocation input data
 	})
